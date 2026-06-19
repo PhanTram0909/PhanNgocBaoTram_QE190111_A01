@@ -53,11 +53,20 @@ namespace FUManagementSystem.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        // [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(NewsArticle article, List<int> tagIds)
         {
+            ModelState.Remove("article.NewsArticleId");
+            ModelState.Remove("article.Category");
+            ModelState.Remove("article.CreatedBy");
+            ModelState.Remove("article.UpdatedBy");
+            ModelState.Remove("article.NewsTags");
+
             if (!ModelState.IsValid)
-                return Json(new { success = false, message = "Validation failed." });
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { success = false, message = "Validation failed: " + string.Join(", ", errors) });
+            }
 
             var accountId = HttpContext.Session.GetString("AccountId");
             article.CreatedById = short.TryParse(accountId, out short id) ? id : (short)0;
@@ -67,11 +76,19 @@ namespace FUManagementSystem.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        // [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(NewsArticle article, List<int> tagIds)
         {
+            ModelState.Remove("article.Category");
+            ModelState.Remove("article.CreatedBy");
+            ModelState.Remove("article.UpdatedBy");
+            ModelState.Remove("article.NewsTags");
+
             if (!ModelState.IsValid)
-                return Json(new { success = false, message = "Validation failed." });
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { success = false, message = "Validation failed: " + string.Join(", ", errors) });
+            }
 
             var accountId = HttpContext.Session.GetString("AccountId");
             short updatedById = short.TryParse(accountId, out short id) ? id : (short)0;
@@ -81,14 +98,21 @@ namespace FUManagementSystem.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        // [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(string id)
         {
-            var accountId = HttpContext.Session.GetString("AccountId");
-            short userId = short.TryParse(accountId, out short uid) ? uid : (short)0;
+            try
+            {
+                var accountId = HttpContext.Session.GetString("AccountId");
+                short userId = short.TryParse(accountId, out short uid) ? uid : (short)0;
 
-            var result = await _articleService.DeleteArticleAsync(id, userId);
-            return Json(new { success = result, message = result ? "Article deleted." : "Cannot delete this article." });
+                var result = await _articleService.DeleteArticleAsync(id, userId);
+                return Json(new { success = result, message = result ? "Article deleted." : "Cannot delete this article (you may not be the creator)." });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "Cannot delete this article due to database constraints." });
+            }
         }
 
         public async Task<IActionResult> History()

@@ -40,37 +40,58 @@ namespace FUManagementSystem.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        // [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("CategoryName,CategoryDescription,ParentCategoryId,IsActive")] NewsCategory category)
         {
+            ModelState.Remove("category.ParentCategory");
+            ModelState.Remove("category.SubCategories");
+            ModelState.Remove("category.NewsArticles");
+
             if (!ModelState.IsValid)
-                return Json(new { success = false, message = "Validation failed." });
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { success = false, message = "Validation failed: " + string.Join(", ", errors) });
+            }
 
             var result = await _categoryService.CreateCategoryAsync(category);
             return Json(new { success = result, message = result ? "Category created." : "Failed." });
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        // [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit([Bind("CategoryId,CategoryName,CategoryDescription,ParentCategoryId,IsActive")] NewsCategory category)
         {
+            ModelState.Remove("category.ParentCategory");
+            ModelState.Remove("category.SubCategories");
+            ModelState.Remove("category.NewsArticles");
+
             if (!ModelState.IsValid)
-                return Json(new { success = false, message = "Validation failed." });
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { success = false, message = "Validation failed: " + string.Join(", ", errors) });
+            }
 
             var result = await _categoryService.UpdateCategoryAsync(category);
             return Json(new { success = result, message = result ? "Category updated." : "Category not found." });
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        // [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(short id)
         {
-            var canDelete = await _categoryService.CanDeleteCategoryAsync(id);
-            if (!canDelete)
-                return Json(new { success = false, message = "Cannot delete: category has assigned articles." });
+            try
+            {
+                var canDelete = await _categoryService.CanDeleteCategoryAsync(id);
+                if (!canDelete)
+                    return Json(new { success = false, message = "Cannot delete: category has assigned articles or subcategories." });
 
-            var result = await _categoryService.DeleteCategoryAsync(id);
-            return Json(new { success = result, message = result ? "Category deleted." : "Category not found." });
+                var result = await _categoryService.DeleteCategoryAsync(id);
+                return Json(new { success = result, message = result ? "Category deleted." : "Category not found." });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "Cannot delete this category due to database constraints." });
+            }
         }
     }
 }

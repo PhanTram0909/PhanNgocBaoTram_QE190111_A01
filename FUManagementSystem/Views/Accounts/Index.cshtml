@@ -22,7 +22,6 @@
 </div>
 
 <div class="container-fluid px-4">
-    <!-- Search -->
     <div class="card mb-4">
         <div class="card-body py-3">
             <form method="get" asp-controller="Accounts" asp-action="Index" class="d-flex gap-3">
@@ -39,7 +38,6 @@
         </div>
     </div>
 
-    <!-- Table -->
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span><i class="bi bi-list-ul me-2"></i>All Accounts (@Model.Count())</span>
@@ -74,9 +72,17 @@
                                 <td>
                                     @switch (acc.AccountRole)
                                     {
-                                        case 1: <span class="badge badge-role-staff">Staff</span> break;
-                                        case 2: <span class="badge badge-role-lecturer">Lecturer</span> break;
-                                        default: <span class="badge badge-role-admin">Admin</span> break;
+                                        case 1:
+                                            <span class="badge badge-role-staff">Staff</span>
+                                            break;
+                                        case 2:
+
+                                            <span class="badge badge-role-lecturer">Lecturer</span>
+                                            break;
+                                        default:
+
+                                            <span class="badge badge-role-admin">Admin</span>
+                                            break;
                                     }
                                 </td>
                                 <td>
@@ -110,7 +116,6 @@
     </div>
 </div>
 
-<!-- ===== CREATE MODAL ===== -->
 <div class="modal fade" id="createModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -151,7 +156,6 @@
     </div>
 </div>
 
-<!-- ===== EDIT MODAL ===== -->
 <div class="modal fade" id="editModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -192,7 +196,6 @@
     </div>
 </div>
 
-<!-- ===== CONFIRM DELETE MODAL ===== -->
 <div class="modal fade delete-modal" id="confirmDeleteModal" tabindex="-1">
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
@@ -213,85 +216,85 @@
 </div>
 
 @section Scripts {
-<script>
-let deleteAccountId = null;
+    <script>
+        let deleteAccountId = null;
 
-function openCreateModal() {
-    document.getElementById('createForm').reset();
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('createModal')).show();
-}
+        function openCreateModal() {
+            document.getElementById('createForm').reset();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('createModal')).show();
+        }
 
-function openEditModal(id) {
-    fetch(`/Accounts/GetAccount?id=${id}`)
-        .then(r => r.json())
-        .then(acc => {
-            if (!acc) { showToast('Account not found.', 'danger'); return; }
-            document.getElementById('editAccountId').value = acc.accountId;
-            document.getElementById('editAccountName').value = acc.accountName;
-            document.getElementById('editAccountEmail').value = acc.accountEmail;
-            document.getElementById('editAccountRole').value = acc.accountRole;
-            bootstrap.Modal.getOrCreateInstance(document.getElementById('editModal')).show();
+        function openEditModal(id) {
+            fetch(`/Accounts/GetAccount?id=${id}`)
+                .then(r => r.json())
+                .then(acc => {
+                    if (!acc) { showToast('Account not found.', 'danger'); return; }
+                    document.getElementById('editAccountId').value = acc.accountId;
+                    document.getElementById('editAccountName').value = acc.accountName;
+                    document.getElementById('editAccountEmail').value = acc.accountEmail;
+                    document.getElementById('editAccountRole').value = acc.accountRole;
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById('editModal')).show();
+                });
+        }
+
+        function deleteAccount(id, name) {
+            deleteAccountId = id;
+            document.getElementById('deleteConfirmMessage').textContent = `Delete account "${name}"? This action cannot be undone.`;
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('confirmDeleteModal')).show();
+        }
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
+            if (!deleteAccountId) return;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]');
+            const body = new URLSearchParams({ id: deleteAccountId });
+            if (token) body.append('__RequestVerificationToken', token.value);
+
+            fetch('/Accounts/Delete', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() })
+                .then(r => r.json())
+                .then(data => {
+                    bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal')).hide();
+                    if (data.success) {
+                        document.getElementById(`row-${deleteAccountId}`)?.remove();
+                        showToast(data.message, 'success');
+                    } else {
+                        showToast(data.message, 'danger');
+                    }
+                    deleteAccountId = null;
+                });
         });
-}
 
-function deleteAccount(id, name) {
-    deleteAccountId = id;
-    document.getElementById('deleteConfirmMessage').textContent = `Delete account "${name}"? This action cannot be undone.`;
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('confirmDeleteModal')).show();
-}
-
-document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
-    if (!deleteAccountId) return;
-    const token = document.querySelector('input[name="__RequestVerificationToken"]');
-    const body = new URLSearchParams({ id: deleteAccountId });
-    if (token) body.append('__RequestVerificationToken', token.value);
-
-    fetch('/Accounts/Delete', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() })
-        .then(r => r.json())
-        .then(data => {
-            bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal')).hide();
-            if (data.success) {
-                document.getElementById(`row-${deleteAccountId}`)?.remove();
-                showToast(data.message, 'success');
-            } else {
-                showToast(data.message, 'danger');
-            }
-            deleteAccountId = null;
+        document.getElementById('createForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const token = document.querySelector('input[name="__RequestVerificationToken"]');
+            const formData = new FormData(this);
+            fetch('/Accounts/Create', { method: 'POST', headers: { 'RequestVerificationToken': token?.value ?? '' }, body: formData })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
+                        showToast(data.message, 'success');
+                        setTimeout(() => location.reload(), 1200);
+                    } else {
+                        showToast(data.message, 'danger');
+                    }
+                });
         });
-});
 
-document.getElementById('createForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-    const token = document.querySelector('input[name="__RequestVerificationToken"]');
-    const formData = new FormData(this);
-    fetch('/Accounts/Create', { method: 'POST', headers: { 'RequestVerificationToken': token?.value ?? '' }, body: formData })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
-                showToast(data.message, 'success');
-                setTimeout(() => location.reload(), 1200);
-            } else {
-                showToast(data.message, 'danger');
-            }
+        document.getElementById('editForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const token = document.querySelector('input[name="__RequestVerificationToken"]');
+            const formData = new FormData(this);
+            fetch('/Accounts/Edit', { method: 'POST', headers: { 'RequestVerificationToken': token?.value ?? '' }, body: formData })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+                        showToast(data.message, 'success');
+                        setTimeout(() => location.reload(), 1200);
+                    } else {
+                        showToast(data.message, 'danger');
+                    }
+                });
         });
-});
-
-document.getElementById('editForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-    const token = document.querySelector('input[name="__RequestVerificationToken"]');
-    const formData = new FormData(this);
-    fetch('/Accounts/Edit', { method: 'POST', headers: { 'RequestVerificationToken': token?.value ?? '' }, body: formData })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
-                showToast(data.message, 'success');
-                setTimeout(() => location.reload(), 1200);
-            } else {
-                showToast(data.message, 'danger');
-            }
-        });
-});
-</script>
+    </script>
 }

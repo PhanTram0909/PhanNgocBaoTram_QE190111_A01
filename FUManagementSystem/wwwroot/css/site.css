@@ -189,7 +189,7 @@ body::after {
 .dropdown-divider { border-color: rgba(255,255,255,.06); margin:.3rem 0; }
 
 /* ===== MAIN ===== */
-.main-content { flex:1; position:relative; z-index:1; padding-bottom:4rem; }
+.main-content { flex:1; position:relative; padding-bottom:4rem; }
 
 /* ===== PAGE HEADER ===== */
 .page-header {
