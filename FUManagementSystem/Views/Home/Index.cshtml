@@ -1,0 +1,80 @@
+@using FUNewsManagementSystem.Model
+@model IEnumerable<NewsArticle>
+@{
+    ViewData["Title"] = "FU News - Latest Updates";
+    Layout = "_Layout";
+}
+
+<!-- Hero Section -->
+<div class="hero-section">
+    <h1><i class="bi bi-newspaper me-2"></i>FU News Hub</h1>
+    <p>Stay updated with the latest news, research, and events from FPT University</p>
+    <form method="get" asp-controller="Home" asp-action="Index" class="d-flex justify-content-center gap-2" style="max-width:500px;margin:0 auto;">
+        <div class="search-wrapper flex-grow-1">
+            <i class="bi bi-search"></i>
+            <input type="text" name="search" class="form-control" placeholder="Search articles..." value="@ViewBag.Search" />
+        </div>
+        <button type="submit" class="btn btn-primary px-4">Search</button>
+        @if (!string.IsNullOrWhiteSpace(ViewBag.Search as string))
+        {
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+        }
+    </form>
+</div>
+
+<div class="container-fluid px-4 py-4">
+    @if (!string.IsNullOrWhiteSpace(ViewBag.Search as string))
+    {
+        <div class="mb-3">
+            <span class="text-secondary">
+                <i class="bi bi-search me-1"></i>
+                Showing results for "<strong>@ViewBag.Search</strong>"
+                — <strong>@Model.Count()</strong> article(s) found
+            </span>
+        </div>
+    }
+
+    @if (Model.Any())
+    {
+        <div class="row g-4">
+            @foreach (var article in Model)
+            {
+                <div class="col-lg-4 col-md-6 fade-in">
+                    <div class="news-card">
+                        <div>
+                            <span class="category-tag">
+                                <i class="bi bi-bookmark me-1"></i>@(article.Category?.CategoryName ?? "General")
+                            </span>
+                            <h5>@article.NewsTitle</h5>
+                            <p class="headline">@article.Headline</p>
+                        </div>
+                        @if (article.NewsTags != null && article.NewsTags.Any())
+                        {
+                            <div class="mt-2">
+                                @foreach (var nt in article.NewsTags.Take(3))
+                                {
+                                    <span class="tag-pill"><i class="bi bi-hash"></i>@nt.Tag?.TagName</span>
+                                }
+                            </div>
+                        }
+                        <div class="meta">
+                            <span><i class="bi bi-person me-1"></i>@(article.CreatedBy?.AccountName ?? "Staff")</span>
+                            <span><i class="bi bi-calendar3 me-1"></i>@(article.CreatedDate?.ToString("MMM dd, yyyy") ?? "")</span>
+                        </div>
+                        <a asp-controller="Home" asp-action="Details" asp-route-id="@article.NewsArticleId" class="read-more">
+                            Read More <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="bi bi-newspaper icon"></i>
+            <h5>No articles found</h5>
+            <p>@(string.IsNullOrWhiteSpace(ViewBag.Search as string) ? "No active news articles are available at this time." : "No articles match your search.")</p>
+        </div>
+    }
+</div>

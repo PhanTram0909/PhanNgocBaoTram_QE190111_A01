@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="FU News Management System - Manage and publish educational news" />
+    <title>@ViewData["Title"] – FUNews</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    @{
+        var accountName = Context.Session.GetString("AccountName");
+        var accountRole = Context.Session.GetString("AccountRole");
+        var isLoggedIn  = accountName != null;
+        var roleLabel   = accountRole switch { "0" => "Admin", "1" => "Staff", "2" => "Lecturer", _ => "Guest" };
+        var currentPath = Context.Request.Path.Value ?? "";
+    }
+
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                <div class="brand-icon"><i class="bi bi-newspaper"></i></div>
+                FU<span>News</span>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav me-auto ms-3 gap-1">
+                    <li class="nav-item">
+                        <a class="nav-link @(currentPath == "/" || currentPath.StartsWith("/Home") ? "active-link" : "")"
+                           asp-controller="Home" asp-action="Index">
+                            <i class="bi bi-house"></i> Home
+                        </a>
+                    </li>
+                    @if (accountRole == "0")
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(currentPath.StartsWith("/Accounts") ? "active-link" : "")"
+                               asp-controller="Accounts" asp-action="Index">
+                                <i class="bi bi-people"></i> Accounts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(currentPath.StartsWith("/Reports") ? "active-link" : "")"
+                               asp-controller="Reports" asp-action="Statistics">
+                                <i class="bi bi-bar-chart-line"></i> Reports
+                            </a>
+                        </li>
+                    }
+                    @if (accountRole == "1")
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(currentPath.StartsWith("/NewsArticles") ? "active-link" : "")"
+                               asp-controller="NewsArticles" asp-action="Index">
+                                <i class="bi bi-file-earmark-text"></i> Articles
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(currentPath.StartsWith("/Categories") ? "active-link" : "")"
+                               asp-controller="Categories" asp-action="Index">
+                                <i class="bi bi-tag"></i> Categories
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(currentPath.Contains("History") ? "active-link" : "")"
+                               asp-controller="NewsArticles" asp-action="History">
+                                <i class="bi bi-clock-history"></i> My Articles
+                            </a>
+                        </li>
+                    }
+                </ul>
+                <ul class="navbar-nav align-items-center gap-2">
+                    @if (isLoggedIn)
+                    {
+                        <li class="nav-item">
+                            <span class="role-badge">@roleLabel</span>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link d-flex align-items-center gap-2" href="#" data-bs-toggle="dropdown">
+                                <div class="avatar" style="width:28px;height:28px;border-radius:8px;font-size:0.72rem;">
+                                    @(accountName?.Substring(0,1).ToUpper())
+                                </div>
+                                <span style="font-weight:600;font-size:0.875rem;">@accountName</span>
+                                <i class="bi bi-chevron-down" style="font-size:0.7rem;opacity:0.6;"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Profile" asp-action="Index">
+                                        <i class="bi bi-person"></i> Profile
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Auth" asp-action="Logout"
+                                       style="color:#f43f5e!important;">
+                                        <i class="bi bi-box-arrow-right"></i> Logout
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="btn-nav-login" asp-controller="Auth" asp-action="Login">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>Sign In
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        @RenderBody()
+    </main>
+
+    <footer class="footer">
+        <div class="container-fluid px-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <span>
+                    <i class="bi bi-newspaper me-1" style="color:var(--clr-primary-2);"></i>
+                    <strong style="color:var(--txt-secondary);">FUNews</strong> Management System
+                </span>
+                <span>PRN222 — Assignment 01</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:9999">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive">
+            <div class="d-flex align-items-center">
+                <div class="toast-body flex-grow-1" id="toastMessage"></div>
+                <button type="button" class="btn-close me-2" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

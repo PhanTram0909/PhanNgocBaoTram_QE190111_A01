@@ -1,0 +1,104 @@
+@using FUNewsManagementSystem.Model
+@model IEnumerable<NewsArticle>
+@{
+    ViewData["Title"] = "My Article History";
+    Layout = "_Layout";
+}
+
+<div class="page-header">
+    <div class="container-fluid px-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="bi bi-clock-history me-2"></i>My Article History</h1>
+                <p class="subtitle">All articles you've created</p>
+            </div>
+            <a asp-controller="NewsArticles" asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to Articles
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid px-4">
+    @if (Model.Any())
+    {
+        <!-- Stats -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-number">@Model.Count()</div>
+                    <div class="stat-label">Total Articles</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-number">@Model.Count(a => a.NewsStatus)</div>
+                    <div class="stat-label">Active Articles</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-number">@Model.Count(a => !a.NewsStatus)</div>
+                    <div class="stat-label">Inactive Articles</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Created Date</th>
+                            <th>Modified Date</th>
+                            <th>Status</th>
+                            <th>Tags</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var art in Model)
+                        {
+                            <tr>
+                                <td><span style="color:#64748b;font-family:monospace;font-size:0.8rem;">@art.NewsArticleId</span></td>
+                                <td>
+                                    <a asp-controller="Home" asp-action="Details" asp-route-id="@art.NewsArticleId" style="color:#818cf8;text-decoration:none;font-weight:500;">
+                                        @art.NewsTitle
+                                    </a>
+                                    <div style="color:#64748b;font-size:0.8rem;">@(art.Headline?.Length > 60 ? art.Headline.Substring(0, 60) + "..." : art.Headline)</div>
+                                </td>
+                                <td><span class="badge badge-role-staff">@(art.Category?.CategoryName ?? "N/A")</span></td>
+                                <td style="color:#94a3b8;font-size:0.875rem;">@(art.CreatedDate?.ToString("dd/MM/yyyy HH:mm") ?? "")</td>
+                                <td style="color:#94a3b8;font-size:0.875rem;">@(art.ModifiedDate?.ToString("dd/MM/yyyy HH:mm") ?? "")</td>
+                                <td>
+                                    @if (art.NewsStatus) { <span class="badge badge-active">Active</span> }
+                                    else { <span class="badge badge-inactive">Inactive</span> }
+                                </td>
+                                <td>
+                                    @if (art.NewsTags != null)
+                                    {
+                                        @foreach (var nt in art.NewsTags.Take(3))
+                                        {
+                                            <span class="tag-pill"><i class="bi bi-hash"></i>@nt.Tag?.TagName</span>
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="bi bi-file-text icon"></i>
+            <h5>No articles yet</h5>
+            <p>You haven't created any articles yet.</p>
+            <a asp-controller="NewsArticles" asp-action="Index" class="btn btn-primary mt-2">Create First Article</a>
+        </div>
+    }
+</div>

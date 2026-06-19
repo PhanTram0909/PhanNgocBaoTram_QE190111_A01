@@ -1,0 +1,105 @@
+@using FUNewsManagementSystem.Model
+@model SystemAccount
+@{
+    ViewData["Title"] = "My Profile";
+    Layout = "_Layout";
+    var isAdmin = Context.Session.GetString("AccountRole") == "0";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="page-header">
+    <div class="container-fluid px-4">
+        <h1><i class="bi bi-person-circle me-2"></i>My Profile</h1>
+        <p class="subtitle">View and manage your account information</p>
+    </div>
+</div>
+
+<div class="container-fluid px-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#0ea5e9);display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;color:white;">
+                            @(Model.AccountName?.Substring(0, 1).ToUpper() ?? "U")
+                        </div>
+                        <div>
+                            <div class="fw-bold">@Model.AccountName</div>
+                            <div style="font-size:0.8rem;color:#64748b;">
+                                @switch (Model.AccountRole)
+                                {
+                                    case 0: <span class="badge badge-role-admin">Administrator</span> break;
+                                    case 1: <span class="badge badge-role-staff">Staff</span> break;
+                                    case 2: <span class="badge badge-role-lecturer">Lecturer</span> break;
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    @if (isAdmin)
+                    {
+                        <div class="alert alert-warning">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Admin profile is managed via system configuration.
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" value="@Model.AccountEmail" readonly />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Role</label>
+                            <input type="text" class="form-control" value="Administrator" readonly />
+                        </div>
+                    }
+                    else
+                    {
+                        <form id="profileForm">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="AccountId" value="@Model.AccountId" />
+                            <input type="hidden" name="AccountRole" value="@Model.AccountRole" />
+                            <div class="mb-3">
+                                <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" name="AccountName" class="form-control" value="@Model.AccountName" required maxlength="100" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email <span class="text-danger">*</span></label>
+                                <input type="email" name="AccountEmail" class="form-control" value="@Model.AccountEmail" required maxlength="150" />
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label">New Password <small class="text-muted">(leave blank to keep current)</small></label>
+                                <input type="password" name="AccountPassword" class="form-control" maxlength="200" placeholder="Enter new password..." />
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-check me-2"></i>Save Changes
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!isAdmin)
+{
+    @section Scripts {
+    <script>
+    document.getElementById('profileForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const token = document.querySelector('input[name="__RequestVerificationToken"]');
+        fetch('/Profile/Update', {
+            method: 'POST',
+            headers: { 'RequestVerificationToken': token?.value ?? '' },
+            body: new FormData(this)
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) showToast(data.message, 'success');
+            else showToast(data.message, 'danger');
+        });
+    });
+    </script>
+    }
+}
