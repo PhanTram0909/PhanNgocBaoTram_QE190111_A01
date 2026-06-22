@@ -8,11 +8,11 @@ namespace FUNewsManagementSystem.DataAccessLayer.Repositories
         public NewsCategoryRepository(FUNewsManagementContext context) : base(context) { }
 
         public async Task<IEnumerable<NewsCategory>> GetAllWithParentAsync()
-            => await _dbSet.Include(c => c.ParentCategory).ToListAsync();
+            => await _dbSet.AsNoTracking().Include(c => c.ParentCategory).ToListAsync();
 
         public async Task<IEnumerable<NewsCategory>> SearchAsync(string? searchTerm)
         {
-            var query = _dbSet.Include(c => c.ParentCategory).AsQueryable();
+            var query = _dbSet.AsNoTracking().Include(c => c.ParentCategory).AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
                 query = query.Where(c => c.CategoryName.Contains(searchTerm) ||

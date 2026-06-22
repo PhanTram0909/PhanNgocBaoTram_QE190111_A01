@@ -9,6 +9,7 @@ namespace FUNewsManagementSystem.DataAccessLayer.Repositories
 
         public async Task<IEnumerable<NewsArticle>> GetAllWithDetailsAsync()
             => await _dbSet
+                .AsNoTracking()
                 .Include(a => a.Category)
                 .Include(a => a.CreatedBy)
                 .Include(a => a.NewsTags!)
@@ -27,6 +28,7 @@ namespace FUNewsManagementSystem.DataAccessLayer.Repositories
 
         public async Task<IEnumerable<NewsArticle>> GetActiveArticlesAsync()
             => await _dbSet
+                .AsNoTracking()
                 .Where(a => a.NewsStatus)
                 .Include(a => a.Category)
                 .Include(a => a.CreatedBy)
@@ -38,6 +40,7 @@ namespace FUNewsManagementSystem.DataAccessLayer.Repositories
         public async Task<IEnumerable<NewsArticle>> SearchAsync(string? searchTerm, bool? statusFilter = null)
         {
             var query = _dbSet
+                .AsNoTracking()
                 .Include(a => a.Category)
                 .Include(a => a.CreatedBy)
                 .AsQueryable();
@@ -55,6 +58,7 @@ namespace FUNewsManagementSystem.DataAccessLayer.Repositories
 
         public async Task<IEnumerable<NewsArticle>> GetByCreatorAsync(short createdById)
             => await _dbSet
+                .AsNoTracking()
                 .Where(a => a.CreatedById == createdById)
                 .Include(a => a.Category)
                 .Include(a => a.NewsTags!)
@@ -64,6 +68,7 @@ namespace FUNewsManagementSystem.DataAccessLayer.Repositories
 
         public async Task<IEnumerable<NewsArticle>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
             => await _dbSet
+                .AsNoTracking()
                 .Where(a => a.CreatedDate >= startDate && a.CreatedDate <= endDate)
                 .Include(a => a.Category)
                 .Include(a => a.CreatedBy)

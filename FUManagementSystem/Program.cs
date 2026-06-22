@@ -6,7 +6,13 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(opts =>
+    {
+        // Prevent circular reference / out-of-memory during JSON serialization
+        opts.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        opts.JsonSerializerOptions.MaxDepth = 5;
+    });
 
 // Support RequestVerificationToken in headers for AJAX calls
 builder.Services.AddAntiforgery(options =>

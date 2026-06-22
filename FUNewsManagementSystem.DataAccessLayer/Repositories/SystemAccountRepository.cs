@@ -8,7 +8,7 @@ namespace FUNewsManagementSystem.DataAccessLayer.Repositories
         public SystemAccountRepository(FUNewsManagementContext context) : base(context) { }
 
         public async Task<SystemAccount?> GetByEmailAsync(string email)
-            => await _dbSet.FirstOrDefaultAsync(a => a.AccountEmail.ToLower() == email.ToLower());
+            => await _dbSet.AsNoTracking().FirstOrDefaultAsync(a => a.AccountEmail.ToLower() == email.ToLower());
 
         public async Task<SystemAccount?> GetByEmailAndPasswordAsync(string email, string password)
             => await _dbSet.FirstOrDefaultAsync(a =>
@@ -18,9 +18,10 @@ namespace FUNewsManagementSystem.DataAccessLayer.Repositories
         public async Task<IEnumerable<SystemAccount>> SearchAsync(string? searchTerm)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
-                return await _dbSet.ToListAsync();
+                return await _dbSet.AsNoTracking().ToListAsync();
 
             return await _dbSet
+                .AsNoTracking()
                 .Where(a => a.AccountName.Contains(searchTerm) ||
                             a.AccountEmail.Contains(searchTerm))
                 .ToListAsync();
