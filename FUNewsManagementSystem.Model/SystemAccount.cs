@@ -13,7 +13,7 @@ namespace FUNewsManagementSystem.Model
         public string AccountName { get; set; } = null!;
 
         [Required(ErrorMessage = "Email is required")]
-        [StringLength(150, ErrorMessage = "Email cannot exceed 150 characters")]
+        [StringLength(70, ErrorMessage = "Email cannot exceed 70 characters")]
         [EmailAddress(ErrorMessage = "Invalid email format")]
         [Display(Name = "Email")]
         public string AccountEmail { get; set; } = null!;
@@ -23,7 +23,7 @@ namespace FUNewsManagementSystem.Model
         public int AccountRole { get; set; }
 
         [Required(ErrorMessage = "Password is required")]
-        [StringLength(200, ErrorMessage = "Password cannot exceed 200 characters")]
+        [StringLength(70, ErrorMessage = "Password cannot exceed 70 characters")]
         [Display(Name = "Password")]
         public string AccountPassword { get; set; } = null!;
 

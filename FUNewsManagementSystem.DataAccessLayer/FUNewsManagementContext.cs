@@ -27,7 +27,7 @@ namespace FUNewsManagementSystem.DataAccessLayer
             modelBuilder.Entity<Tag>().ToTable("Tag");
             modelBuilder.Entity<NewsTag>().ToTable("NewsTag");
 
-            // Fix typo trong DB giảng viên: "CategoryDesciption" (thiếu 'r')
+            // DB column bị typo thiếu 'r': "CategoryDesciption" thay vì "CategoryDescription"
             modelBuilder.Entity<NewsCategory>()
                 .Property(c => c.CategoryDescription)
                 .HasColumnName("CategoryDesciption");

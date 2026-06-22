@@ -11,12 +11,12 @@ namespace FUNewsManagementSystem.Model
         public string NewsArticleId { get; set; } = null!;
 
         [Required(ErrorMessage = "Title is required")]
-        [StringLength(200, ErrorMessage = "Title cannot exceed 200 characters")]
+        [StringLength(400, ErrorMessage = "Title cannot exceed 400 characters")]
         [Display(Name = "Title")]
         public string NewsTitle { get; set; } = null!;
 
         [Required(ErrorMessage = "Headline is required")]
-        [StringLength(250, ErrorMessage = "Headline cannot exceed 250 characters")]
+        [StringLength(150, ErrorMessage = "Headline cannot exceed 150 characters")]
         [Display(Name = "Headline")]
         public string Headline { get; set; } = null!;
 
@@ -36,9 +36,11 @@ namespace FUNewsManagementSystem.Model
         public bool NewsStatus { get; set; } = true;
 
         [Display(Name = "Created By")]
+        [Column("CreatedByID")]
         public short? CreatedById { get; set; }
 
         [Display(Name = "Updated By")]
+        [Column("UpdatedByID")]
         public short? UpdatedById { get; set; }
 
         [Display(Name = "Created Date")]
